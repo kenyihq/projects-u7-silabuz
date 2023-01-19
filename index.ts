@@ -48,7 +48,7 @@ app.post("/api/v1/users", async (req, res) => {
 
 app.post("/api/v1/users/login", async (req: Request, res: Response) => { 
     const { email, password } = req.body; 
-    const user = await prisma.user.findMany({ 
+    const user = await prisma.user.findUnique({ 
       where: { email }, 
       }); 
     if (!user) { 
