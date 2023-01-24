@@ -60,25 +60,17 @@ app.post("/api/v1/users", (req, res) => __awaiter(void 0, void 0, void 0, functi
     const update_at = new Date();
     const saltRounds = 10;
     const hashedPassword = yield bcrypt_1.default.hash(password, saltRounds);
-    const user_email = yield prisma.user.findUnique({
-        where: { email }
+    const user = yield prisma.user.create({
+        data: {
+            name,
+            email,
+            password: hashedPassword,
+            last_session,
+            update_at,
+            date_born: new Date()
+        },
     });
-    try {
-        const user = yield prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                last_session,
-                update_at,
-                date_born: new Date(date_born)
-            },
-        });
-        res.json({ message: 'User created successfully', user });
-    }
-    catch (e) {
-        res.status(500).json({ message: 'Error creating user' });
-    }
+    res.json(user);
 }));
 app.post("/api/v1/users/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
@@ -99,30 +91,36 @@ app.post("/api/v1/users/login", (req, res) => __awaiter(void 0, void 0, void 0, 
     return res.json({ message: 'Logged in successfully' });
     //return res.status(201).json({user, token});      // 201: creado 
 }));
-app.post(" /api/v1/songs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, artist, album, year, genre, duration } = req.body;
-    const song = yield prisma.song.create({
-        data: {
-            name: name,
-            artist: artist,
-            album: album,
-            year: year,
-            genre: genre,
-            duration: duration
-        },
-    });
-    res.json(song);
+// List songs
+app.get("/api/v1/songs/all", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const songs = yield prisma.song.findMany();
+    return res.send({ message: 'Song listed successfully', songs });
 }));
-app.get("/api/v1/songs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield prisma.user.findMany();
-    res.json(result);
-}));
+//LISTAR CANCIONES POR ID
 app.get("/api/v1/songs/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.body;
-    const result = yield prisma.user.findUnique({
-        where: {
-            id
-        },
-    });
-    res.json(result);
+    try {
+        const { id } = req.params;
+        const result = yield prisma.song.findUnique({
+            where: {
+                id
+            },
+        });
+        return res.json({ message: 'Song listed by id successfully', result });
+    }
+    catch (err) {
+        return res.status(404).json({ message: "Song not found" });
+    }
+}));
+// Create song
+app.post("/api/v1/songs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = req.body;
+    try {
+        const song = yield prisma.song.create({
+            data
+        });
+        return res.json({ message: 'Song created successfully', song });
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Error creating song', e });
+    }
 }));

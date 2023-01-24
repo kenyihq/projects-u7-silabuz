@@ -15,8 +15,8 @@ model User {
   name        String 
   email       String  @unique 
   password    String 
-  last_session  DateTime @default(now()) 
-  update_at   DateTime  @default(now()) 
+  last_session  DateTime?
+  update_at   DateTime  @updatedAt
   date_born   DateTime  @default(now()) 
   playlists   Playlist[] 
 }
@@ -29,25 +29,17 @@ model Song {
   year      Int  
   genre     String  
   duration  Int  
-  playlistsongs   PlaylistSongs[]  
+  isPrivate    Boolean @default(false)
+  playlists Playlist[] 
+  @@map("Song")
 }  
-  
   
 model Playlist {  
   id       Int    @id @default(autoincrement())  
   name     String  
   user     User   @relation(fields: [user_id], references: [id])  
   user_id  Int 
-  playlistsongs   PlaylistSongs[]  
+  songs   Song[]
+  @@map("PlaylistS")
 }  
   
- model PlaylistSongs {  
-  id_song      Int  
-  id_playlist  Int  
-  playlist     Playlist   @relation(fields: [playlist_id], references: [id])  
-  playlist_id  Int  
-  song Song @relation(fields: [song_id], references: [id])  
-  song_id  Int  
-  @@unique([id_song, id_playlist])  
-}
-
