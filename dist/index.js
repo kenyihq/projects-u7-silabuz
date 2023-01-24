@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const bcrypt_1 = __importDefault(require("bcrypt"));
-const jwt = __importStar(require("jsonwebtoken"));
-// Importando Prisma Client
 const client_1 = require("@prisma/client");
+const bcrypt_1 = __importDefault(require("bcrypt"));
+//import bcrypt from "bcrypt";
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 dotenv_1.default.config();
 // Iniciando el cliente
 const prisma = new client_1.PrismaClient();
@@ -85,35 +62,36 @@ app.post("/api/v1/users/login", (req, res) => __awaiter(void 0, void 0, void 0, 
     if (!isMatch) {
         return res.status(401).json({ message: 'Invalid email or password' });
     }
-    const token = jwt.sign(user, process.env.TOKEN_SECRET, {
+    const token = jsonwebtoken_1.default.sign(user, process.env.TOKEN_SECRET, {
         expiresIn: "1h",
     });
     return res.json({ message: 'Logged in successfully', user, token });
 }));
-app.post(" /api/v1/songs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, artist, album, year, genre, duration } = req.body;
-    const song = yield prisma.song.create({
-        data: {
-            name: name,
-            artist: artist,
-            album: album,
-            year: year,
-            genre: genre,
-            duration: duration
-        },
-    });
-    res.json(song);
+// List songs
+app.post("/api/v1/songs/all", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const songs = yield prisma.song.findMany();
+    return res.send({ message: 'Song listed successfully', songs });
 }));
-app.get("/api/v1/songs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield prisma.user.findMany();
-    res.json(result);
-}));
+//LISTAR CANCIONES POR ID
 app.get("/api/v1/songs/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
-    const result = yield prisma.user.findUnique({
+    const result = yield prisma.song.findUnique({
         where: {
             id
         },
     });
-    res.json(result);
+    return res.json({ message: 'Song listed by id successfully', result });
+}));
+// Create song
+app.post("/api/v1/songs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = req.body;
+    try {
+        const song = yield prisma.song.create({
+            data
+        });
+        return res.json({ message: 'Song created successfully', song });
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Error creating song', e });
+    }
 }));
