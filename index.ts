@@ -24,26 +24,37 @@ app.listen(port, () => {
   console.log(`El servidor se ejecuta en http://localhost:${port}`);
 });
 
-app.post("/api/v1/users", async (req, res) => {
-    const { name, email, password, date_born} = req.body;
-    const last_session= new Date()
-    const update_at= new Date()
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    
+app.post("/api/v1/users", async (req: Request, res: Response) => {
+  const { name, email, password, date_born} = req.body;
+  const last_session= new Date()
+  const update_at= new Date()
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+  const user_email = await prisma.user.findUnique(
+    {
+      where : {email}
+    }
+  );
+
+  try {
     const user = await prisma.user.create({
         data: {
-            name ,
-            email ,
-            password : hashedPassword,
-            last_session ,
-            update_at ,
-            date_born : new Date()
-          },
+            name,
+            email,
+            password: hashedPassword,
+            last_session,
+            update_at,
+            date_born: new Date(date_born)
+        },
     });
-    res.json(user);
-  });
-
+    res.json({ message: 'User created successfully', user });
+  } catch (e) { 
+      res.status(500).json({ message: 'Error creating user' });
+  }
+    
+  
+});
   
 
 app.post("/api/v1/users/login", async (req: Request, res: Response) => { 

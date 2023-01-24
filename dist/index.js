@@ -60,21 +60,29 @@ app.post("/api/v1/users", (req, res) => __awaiter(void 0, void 0, void 0, functi
     const update_at = new Date();
     const saltRounds = 10;
     const hashedPassword = yield bcrypt_1.default.hash(password, saltRounds);
-    const user = yield prisma.user.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword,
-            last_session,
-            update_at,
-            date_born: new Date()
-        },
+    const user_email = yield prisma.user.findUnique({
+        where: { email }
     });
-    res.json(user);
+    try {
+        const user = yield prisma.user.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword,
+                last_session,
+                update_at,
+                date_born: new Date(date_born)
+            },
+        });
+        res.json({ message: 'User created successfully', user });
+    }
+    catch (e) {
+        res.status(500).json({ message: 'Error creating user' });
+    }
 }));
 app.post("/api/v1/users/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
-    const user = yield prisma.user.findMany({
+    const user = yield prisma.user.findUnique({
         where: { email },
     });
     if (!user) {
