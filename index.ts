@@ -69,21 +69,25 @@ app.post("/api/v1/users/login", async (req: Request, res: Response) => {
   });
 
 // List songs
-app.post("/api/v1/songs/all", async (req: Request, res: Response) => {
+app.get("/api/v1/songs/all", async (req: Request, res: Response) => {
   const songs = await prisma.song.findMany();
     return res.send({ message: 'Song listed successfully', songs});
 });
 
 //LISTAR CANCIONES POR ID
-  app.get("/api/v1/songs/:id", async (req: Request, res: Response) => {
-    const {id} = req.body;
+app.get("/api/v1/songs/:id", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
     const result = await prisma.song.findUnique({
         where: {
           id
         },
-      })
+      });
     return res.json({ message: 'Song listed by id successfully', result});
-  });
+  } catch (err) {
+    return res.status(404).json({ message: "Song not found" });
+  }
+});
 
 
 // Create song

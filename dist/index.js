@@ -68,19 +68,24 @@ app.post("/api/v1/users/login", (req, res) => __awaiter(void 0, void 0, void 0, 
     return res.json({ message: 'Logged in successfully', user, token });
 }));
 // List songs
-app.post("/api/v1/songs/all", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get("/api/v1/songs/all", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const songs = yield prisma.song.findMany();
     return res.send({ message: 'Song listed successfully', songs });
 }));
 //LISTAR CANCIONES POR ID
 app.get("/api/v1/songs/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.body;
-    const result = yield prisma.song.findUnique({
-        where: {
-            id
-        },
-    });
-    return res.json({ message: 'Song listed by id successfully', result });
+    try {
+        const { id } = req.params;
+        const result = yield prisma.song.findUnique({
+            where: {
+                id
+            },
+        });
+        return res.json({ message: 'Song listed by id successfully', result });
+    }
+    catch (err) {
+        return res.status(404).json({ message: "Song not found" });
+    }
 }));
 // Create song
 app.post("/api/v1/songs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
