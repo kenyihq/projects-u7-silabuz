@@ -1,8 +1,11 @@
 # PROJECT UNIT 07
 
-#### 🏆 PARTICIPANTS
-  - Kenyi Hancco
-  - Vanesa Huallpa
+### Video
+👉 [Click here](https://youtu.be/vPOG24rGVDE)
+
+### 🏆 PARTICIPANTS
+  - [Kenyi Hancco](https://github.com/kenyihq)
+  - [Vanesa Huallpa](https://github.com/VANESAHUALLPA)
 
 ## STAR PROJECT
 ### 🧑‍💻 Requirements:
