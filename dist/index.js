@@ -55,45 +55,36 @@ app.post("/api/v1/users/login", (req, res) => __awaiter(void 0, void 0, void 0, 
         where: { email },
     });
     if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+        return res.status(401).json({ message: 'Correo ó contraseña INCORRECTO' });
     }
+    console.log(user);
     const isMatch = yield bcrypt_1.default.compare(password, user.password);
     if (!isMatch) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+        return res.status(401).json({ message: 'Correo ó contraseña INCORRECTO' });
     }
-<<<<<<< HEAD
-    const token = jwt.sign(email, TOKEN_SECRET, {
-=======
     const token = jsonwebtoken_1.default.sign(user, process.env.TOKEN_SECRET, {
->>>>>>> dev_kenyihq
         expiresIn: "1h",
     });
-    res.cookie('token', token, { httpOnly: true });
-    return res.json({ message: 'Logged in successfully' });
-    //return res.status(201).json({user, token});      // 201: creado 
+    return res.json({ message: 'Se inicio secion CORRECTAMENTE', user, token });
 }));
 // List songs
 app.get("/api/v1/songs/all", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const songs = yield prisma.song.findMany();
-    return res.send({ message: 'Song listed successfully', songs });
+    return res.send({ message: 'Todas las canciones', songs });
 }));
 //LISTAR CANCIONES POR ID
 app.get("/api/v1/songs/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-<<<<<<< HEAD
-        const { id } = req.params;
-=======
         const { id } = req.body;
->>>>>>> dev_kenyihq
         const result = yield prisma.song.findUnique({
             where: {
                 id
             },
         });
-        return res.json({ message: 'Song listed by id successfully', result });
+        return res.json({ message: 'Listado de canciones CORRECTAMENTE', result });
     }
     catch (err) {
-        return res.status(404).json({ message: "Song not found" });
+        return res.status(404).json({ message: "Cancion no encontrada" });
     }
 }));
 // Create song
@@ -103,33 +94,30 @@ app.post("/api/v1/songs", (req, res) => __awaiter(void 0, void 0, void 0, functi
         const song = yield prisma.song.create({
             data
         });
-        return res.json({ message: 'Song created successfully', song });
+        return res.json({ message: 'Cancion creada CORRECTAMENTE', song });
     }
     catch (e) {
-        return res.status(500).json({ message: 'Error creating song', e });
+        return res.status(500).json({ message: 'Error al crear la cancion', e });
     }
-<<<<<<< HEAD
-=======
 }));
 // Create playlist
 app.post("/api/v1/create-playlist", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.body || !req.body.name || !req.body.user_id)
-        return res.status(400).json({ error: "Invalid request" });
+        return res.status(400).json({ error: "Solicitud invalida" });
     const { name, user_id } = req.body;
     try {
         const user = yield prisma.user.findUnique({ where: { id: user_id } });
         if (!user)
-            throw new Error("user not found");
+            throw new Error("Usuario no encontrado");
         const playlist = yield prisma.playlist.create({
             data: {
                 name,
                 user: { connect: { id: user_id } }
             }
         });
-        return res.json({ message: "Playlist created succesfuly", playlist });
+        return res.json({ message: "Playlist creado correctamente", playlist });
     }
     catch (error) {
         return res.status(404).json({ error: error.message });
     }
->>>>>>> dev_kenyihq
 }));
