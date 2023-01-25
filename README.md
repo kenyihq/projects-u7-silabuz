@@ -9,19 +9,21 @@
 
 #### ⚡ Install dependencies
 
-  - npm install
-
-#### ⚡ Install dist directory
-
-  - npx tsc --init
+####
+    npm install
+  ####
 
 #### ⚡ Perform migrations
 
-  - npx prisma migrate dev --name init
+####
+    npx prisma migrate dev --name init
+  ####
 
 #### ⚡ Run the project 
 
-  - npm run dev
+####
+    - npm run dev
+  ####
 
 ## API 👾🎮♟🎲📲
 
