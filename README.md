@@ -22,7 +22,7 @@
 #### ⚡ Run the project 
 
 ####
-    - npm run dev
+    npm run dev
   ####
 
 ## API 👾🎮♟🎲📲
@@ -51,9 +51,9 @@
 
 |Parameter | Type |
 | :------- | :------ | 
-| name | string |
-| artist | string |
-| album | string |
-| year | int |
-| genre | string |
-| duration | int |
+| name | `string` |
+| artist | `string` |
+| album | `string` |
+| year | `int` |
+| genre | `string` |
+| duration | `int` |
