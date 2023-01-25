@@ -77,7 +77,7 @@ app.get("/api/v1/songs/all", async (req: Request, res: Response) => {
 //LISTAR CANCIONES POR ID
 app.get("/api/v1/songs/:id", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
     const result = await prisma.song.findUnique({
         where: {
           id
@@ -102,3 +102,24 @@ app.post("/api/v1/songs", async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Error creating song', e });
   }
 });
+
+
+// Create playlist
+app.post("/api/v1/create-playlist", async (req: Request, res: Response) =>{
+    if(!req.body || !req.body.name || !req.body.user_id )
+        return res.status(400).json({error: "Invalid request"})
+    const { name, user_id } = req.body;
+    try {
+        const user = await prisma.user.findUnique({where: { id: user_id }})
+        if(!user) throw new Error("user not found")
+        const playlist = await prisma.playlist.create({
+            data : {
+                name,
+                user: { connect: { id: user_id} }
+            }
+        });
+        return res.json( {message: "Playlist created succesfuly",  playlist} )
+    } catch (error) {
+        return res.status(404).json({ error: error.message });
+    }
+})
