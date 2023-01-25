@@ -1,7 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
-import { validateAuthorization } from "./middleware";
 
 import bcrypt from "bcrypt"
 //import bcrypt from "bcrypt";
@@ -77,7 +76,7 @@ app.get("/api/v1/songs/all", async (req: Request, res: Response) => {
 //LISTAR CANCIONES POR ID
 app.get("/api/v1/songs/:id", async (req: Request, res: Response) => {
   try {
-    const { id } = req.body;
+    const id =parseInt(req.params.id);
     const result = await prisma.song.findUnique({
         where: {
           id
@@ -123,3 +122,26 @@ app.post("/api/v1/create-playlist", async (req: Request, res: Response) =>{
         return res.status(404).json({ error: error.message });
     }
 })
+
+// Add song a playlist
+app.post("/api/v1/playlist", async (req, res) => {
+  try {
+    const { id_playlist, id_song } = req.body;
+
+    if (!id_playlist || !id_song) {
+      return res.status(400).json({ message: "Ambos id_playlist y id_song son requeridos en el cuerpo de la solicitud" });
+    }
+
+    const playlist = await prisma.playlist.update({
+      where: { id: id_playlist },
+      include: { songs: true },
+      data: { songs: { connect: { id: id_song } } }
+    });
+
+    return res.json({ message: "Canción agregada a la lista de reproducción exitosamente", playlist });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Ocurrió un error al agregar la canción a la lista de reproducción" });
+  }
+});
+
