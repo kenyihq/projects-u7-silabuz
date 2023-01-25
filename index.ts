@@ -3,13 +3,10 @@ import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 
 import bcrypt from "bcrypt"
-//import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import e from 'express';
 
 dotenv.config();
 
-// Iniciando el cliente
 const prisma = new PrismaClient()
 const app: Express = express();
 const port = process.env.PORT;
@@ -24,26 +21,39 @@ app.listen(port, () => {
   console.log(`El servidor se ejecuta en http://localhost:${port}`);
 });
 
-app.post("/api/v1/users", async (req, res) => {
+// Create user
+app.post("/api/v1/users", async (req: Request, res: Response) => {
     const { name, email, password, date_born} = req.body;
     const last_session= new Date()
     const update_at= new Date()
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    
-    const user = await prisma.user.create({
-        data: {
-            name ,
-            email ,
-            password : hashedPassword,
-            last_session ,
-            update_at ,
-            date_born : new Date()
-          },
-    });
-    res.json(user);
-  });
 
+    const user_email = await prisma.user.findUnique(
+      {
+        where : {email}
+      }
+    );
+
+    try {
+      const user = await prisma.user.create({
+          data: {
+              name,
+              email,
+              password: hashedPassword,
+              last_session,
+              update_at,
+              date_born: new Date(date_born)
+          },
+      });
+      res.json({ message: 'Usuario credo correctamente', user });
+    } catch (e) { 
+        res.status(500).json({ message: 'Error al crear el usuario' });
+    }
+      
+    
+  });
+// Login
 app.post("/api/v1/users/login", async (req: Request, res: Response) => {  
     const { email, password } = req.body;  
     const user = await prisma.user.findUnique({  
@@ -51,26 +61,26 @@ app.post("/api/v1/users/login", async (req: Request, res: Response) => {
       });  
 
     if (!user) {  
-        return res.status(401).json({ message: 'Invalid email or password' });  
+        return res.status(401).json({ message: 'Correo o contraseña incorrecta' });  
     }  
     console.log(user) 
     
     const isMatch = await bcrypt.compare(password, user.password );  
     if (!isMatch) {  
-      return res.status(401).json({ message: 'Invalid email or password' });  
+      return res.status(401).json({ message: 'Correo o contraseña incorrecta' });  
     }  
     
     const token = jwt.sign(user,process.env.TOKEN_SECRET!, {  
       expiresIn: "1h",  
     })  
-    return res.json({ message: 'Logged in successfully' ,user, token});  
+    return res.json({ message: 'Inicio de sesion correctamente' ,user, token});  
 
   });
 
 // List songs
 app.get("/api/v1/songs/all", async (req: Request, res: Response) => {
   const songs = await prisma.song.findMany();
-    return res.send({ message: 'Song listed successfully', songs});
+    return res.send({ message: 'Cancion agregada correctamente', songs});
 });
 
 //LISTAR CANCIONES POR ID
@@ -82,9 +92,9 @@ app.get("/api/v1/songs/:id", async (req: Request, res: Response) => {
           id
         },
       });
-    return res.json({ message: 'Song listed by id successfully', result});
+    return res.json({ message: 'Todas las canciones', result});
   } catch (err) {
-    return res.status(404).json({ message: "Song not found" });
+    return res.status(404).json({ message: "No se encontro la cancion" });
   }
 });
 
@@ -96,9 +106,9 @@ app.post("/api/v1/songs", async (req: Request, res: Response) => {
     const song = await prisma.song.create({
       data
     });
-    return res.json({ message: 'Song created successfully' ,song});  
+    return res.json({ message: 'Cancion creada correctamente' ,song});  
   }catch (e) {
-    return res.status(500).json({ message: 'Error creating song', e });
+    return res.status(500).json({ message: 'Error al crear la cancion', e });
   }
 });
 
@@ -106,18 +116,18 @@ app.post("/api/v1/songs", async (req: Request, res: Response) => {
 // Create playlist
 app.post("/api/v1/create-playlist", async (req: Request, res: Response) =>{
     if(!req.body || !req.body.name || !req.body.user_id )
-        return res.status(400).json({error: "Invalid request"})
+        return res.status(400).json({error: "Solicitud invalida"})
     const { name, user_id } = req.body;
     try {
         const user = await prisma.user.findUnique({where: { id: user_id }})
-        if(!user) throw new Error("user not found")
+        if(!user) throw new Error("Usuario no existe")
         const playlist = await prisma.playlist.create({
             data : {
                 name,
                 user: { connect: { id: user_id} }
             }
         });
-        return res.json( {message: "Playlist created succesfuly",  playlist} )
+        return res.json( {message: "Playlist creado correctamente",  playlist} )
     } catch (error) {
         return res.status(404).json({ error: error.message });
     }
